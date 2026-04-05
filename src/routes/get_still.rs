@@ -3,19 +3,32 @@ use std::sync::Arc;
 use poem::{handler, http::StatusCode, web::{Data, Json, Path}, Error};
 use sqlx::query_as;
 
-use crate::models::{AppState, CustomResponse, StillResponse};
+use crate::models::{AppState, CustomResponse, StillResponse, StillRow};
 
 #[handler]
 pub async fn get_still(
     Path(slug): Path<String>,
     data: Data<&Arc<AppState>>,
 ) -> Result<Json<CustomResponse<StillResponse>>, Error> {
-    let still: StillResponse = query_as(
+    let row: StillRow = query_as(
         r#"
         SELECT s.still_id, s.slug, s.user_id, u.username, u.display_name,
-               s.caption, s.image_url, s.width, s.height, s.published_at
-        FROM stills s JOIN users u ON s.user_id = u.user_id
+               s.caption, s.published_at,
+               COALESCE(
+                   json_group_array(json_object(
+                       'image_id', si.image_id,
+                       'image_url', si.image_url,
+                       'width', si.width,
+                       'height', si.height,
+                       'position', si.position
+                   )) FILTER (WHERE si.image_id IS NOT NULL),
+                   '[]'
+               ) as images_json
+        FROM stills s
+        JOIN users u ON s.user_id = u.user_id
+        LEFT JOIN still_images si ON s.still_id = si.still_id
         WHERE s.slug = ?
+        GROUP BY s.still_id
         "#,
     )
     .bind(&slug)
@@ -31,5 +44,5 @@ pub async fn get_still(
         ),
     })?;
 
-    Ok(Json(CustomResponse::ok(still)))
+    Ok(Json(CustomResponse::ok(row.into_response())))
 }

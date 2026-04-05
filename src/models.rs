@@ -62,11 +62,50 @@ pub struct MeResponse {
 
 #[derive(Debug, Deserialize)]
 pub struct CreateStillRequest {
-    pub image_key: String,
+    pub image_keys: Vec<String>,
     pub caption: Option<String>,
 }
 
-#[derive(Debug, Serialize, FromRow)]
+#[derive(Debug, Serialize, Deserialize, FromRow)]
+pub struct ImageResponse {
+    pub image_id: String,
+    pub image_url: String,
+    pub width: Option<i64>,
+    pub height: Option<i64>,
+    pub position: i64,
+}
+
+/// DB에서 직접 매핑되는 내부 row 타입 (images_json 포함)
+#[derive(Debug, FromRow)]
+pub struct StillRow {
+    pub still_id: String,
+    pub slug: String,
+    pub user_id: String,
+    pub username: String,
+    pub display_name: Option<String>,
+    pub caption: Option<String>,
+    pub images_json: String,
+    pub published_at: String,
+}
+
+impl StillRow {
+    pub fn into_response(self) -> StillResponse {
+        let images: Vec<ImageResponse> =
+            serde_json::from_str(&self.images_json).unwrap_or_default();
+        StillResponse {
+            still_id: self.still_id,
+            slug: self.slug,
+            user_id: self.user_id,
+            username: self.username,
+            display_name: self.display_name,
+            caption: self.caption,
+            images,
+            published_at: self.published_at,
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
 pub struct StillResponse {
     pub still_id: String,
     pub slug: String,
@@ -74,9 +113,7 @@ pub struct StillResponse {
     pub username: String,
     pub display_name: Option<String>,
     pub caption: Option<String>,
-    pub image_url: String,
-    pub width: Option<i64>,
-    pub height: Option<i64>,
+    pub images: Vec<ImageResponse>,
     pub published_at: String,
 }
 

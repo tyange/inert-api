@@ -4,7 +4,7 @@ use inert_api::auth::authorization::current_user;
 use poem::{handler, web::{Data, Json, Query}, Error, Request};
 use sqlx::{query_as, query_scalar};
 
-use crate::models::{AppState, CustomResponse, PaginationQuery, StillResponse, StillsListResponse};
+use crate::models::{AppState, CustomResponse, PaginationQuery, StillRow, StillsListResponse};
 
 #[handler]
 pub async fn get_mine(
@@ -22,12 +22,25 @@ pub async fn get_mine(
         .await
         .unwrap_or(0);
 
-    let stills: Vec<StillResponse> = query_as(
+    let rows: Vec<StillRow> = query_as(
         r#"
         SELECT s.still_id, s.slug, s.user_id, u.username, u.display_name,
-               s.caption, s.image_url, s.width, s.height, s.published_at
-        FROM stills s JOIN users u ON s.user_id = u.user_id
+               s.caption, s.published_at,
+               COALESCE(
+                   json_group_array(json_object(
+                       'image_id', si.image_id,
+                       'image_url', si.image_url,
+                       'width', si.width,
+                       'height', si.height,
+                       'position', si.position
+                   )) FILTER (WHERE si.image_id IS NOT NULL),
+                   '[]'
+               ) as images_json
+        FROM stills s
+        JOIN users u ON s.user_id = u.user_id
+        LEFT JOIN still_images si ON s.still_id = si.still_id
         WHERE s.user_id = ?
+        GROUP BY s.still_id
         ORDER BY s.published_at DESC
         LIMIT ? OFFSET ?
         "#,
@@ -44,5 +57,6 @@ pub async fn get_mine(
         )
     })?;
 
+    let stills = rows.into_iter().map(StillRow::into_response).collect();
     Ok(Json(CustomResponse::ok(StillsListResponse { stills, total })))
 }

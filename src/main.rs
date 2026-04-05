@@ -30,6 +30,7 @@ use routes::{
     get_still::get_still,
     get_user_stills::get_user_stills,
     login::login,
+    login_google::login_google,
     me::me,
     signup::signup,
     upload_image::upload_image,
@@ -110,6 +111,7 @@ async fn main() -> Result<(), std::io::Error> {
         // 인증
         .at("/auth/signup", post(signup))
         .at("/auth/login", post(login))
+        .at("/auth/login/google", post(login_google))
         .at("/auth/me", get(me).with(Auth))
         // Stills
         .at("/stills", post(create_still).with(Auth))

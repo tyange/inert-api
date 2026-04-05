@@ -7,6 +7,7 @@ pub mod get_mine;
 pub mod get_still;
 pub mod get_user_stills;
 pub mod login;
+pub mod login_google;
 pub mod me;
 pub mod signup;
 pub mod upload_image;

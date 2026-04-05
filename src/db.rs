@@ -50,5 +50,10 @@ pub async fn init_db(db: &Pool<Sqlite>) -> Result<(), sqlx::Error> {
     .execute(db)
     .await?;
 
+    // google_sub 컬럼 마이그레이션 (없으면 추가)
+    let _ = sqlx::query("ALTER TABLE users ADD COLUMN google_sub TEXT")
+        .execute(db)
+        .await;
+
     Ok(())
 }

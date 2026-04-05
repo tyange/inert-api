@@ -1,0 +1,12 @@
+pub mod create_still;
+pub mod delete_still;
+pub mod get_feed;
+pub mod get_feed_json;
+pub mod get_feed_rss;
+pub mod get_mine;
+pub mod get_still;
+pub mod get_user_stills;
+pub mod login;
+pub mod me;
+pub mod signup;
+pub mod upload_image;

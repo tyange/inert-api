@@ -1,0 +1,21 @@
+[package]
+name = "inert-api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+aws-config = { version = "1", features = ["behavior-version-latest"] }
+aws-sdk-s3 = "1"
+bcrypt = "0.17"
+chrono = { version = "0.4", features = ["serde"] }
+dotenv = "0.15"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp"] }
+jsonwebtoken = "9"
+nanoid = "0.4"
+poem = { version = "3", features = ["multipart"] }
+rss = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sqlx = { version = "0.8", features = ["sqlite", "runtime-tokio"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+uuid = { version = "1", features = ["v4"] }

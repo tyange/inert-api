@@ -1,0 +1,15 @@
+[Unit]
+Description=inert-api
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/inert-api
+EnvironmentFile=/opt/inert-api/.env
+ExecStart=/opt/inert-api/inert-api
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

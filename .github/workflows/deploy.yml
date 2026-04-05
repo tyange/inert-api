@@ -37,6 +37,10 @@ jobs:
         run: |
           echo "$SSH_KEY" > /tmp/deploy_key
           chmod 600 /tmp/deploy_key
+          ssh -i /tmp/deploy_key \
+            -o StrictHostKeyChecking=no \
+            $USER@$HOST \
+            "sudo systemctl stop inert-api"
           scp -i /tmp/deploy_key \
             -o StrictHostKeyChecking=no \
             target/release/inert-api \
@@ -44,5 +48,5 @@ jobs:
           ssh -i /tmp/deploy_key \
             -o StrictHostKeyChecking=no \
             $USER@$HOST \
-            "sudo systemctl restart inert-api && sudo systemctl status inert-api --no-pager"
+            "sudo systemctl start inert-api && sudo systemctl status inert-api --no-pager"
           rm /tmp/deploy_key

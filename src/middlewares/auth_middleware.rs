@@ -4,12 +4,16 @@ use inert_api::auth::{authorization::AuthenticatedUser, jwt::Claims};
 use poem::{http::StatusCode, Endpoint, Error, Middleware, Request};
 
 fn authenticated_user_from_request(req: &Request) -> Result<AuthenticatedUser, Error> {
-    let token = req
+    let header = req
         .headers()
         .get("Authorization")
         .ok_or_else(|| Error::from_string("Authorization 헤더가 필요합니다.", StatusCode::UNAUTHORIZED))?
         .to_str()
         .map_err(|e| Error::from_string(e.to_string(), StatusCode::INTERNAL_SERVER_ERROR))?;
+
+    let token = header
+        .strip_prefix("Bearer ")
+        .ok_or_else(|| Error::from_string("Bearer 토큰 형식이 아닙니다.", StatusCode::UNAUTHORIZED))?;
 
     let secret = env::var("JWT_SECRET").map_err(|_| {
         Error::from_string("서버 설정 오류", StatusCode::INTERNAL_SERVER_ERROR)

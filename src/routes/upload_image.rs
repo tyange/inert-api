@@ -68,6 +68,7 @@ pub async fn upload_image(
             .key(&image_key)
             .body(ByteStream::from(file_bytes))
             .content_type(&content_type)
+            .acl(aws_sdk_s3::types::ObjectCannedAcl::PublicRead)
             .send()
             .await
             .map_err(|e| {

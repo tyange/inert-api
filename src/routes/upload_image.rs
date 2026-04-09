@@ -72,8 +72,9 @@ pub async fn upload_image(
             .send()
             .await
             .map_err(|e| {
-                eprintln!("S3 업로드 실패: {}", e);
-                Error::from_string("이미지 업로드에 실패했습니다.", StatusCode::INTERNAL_SERVER_ERROR)
+                let detail = format!("S3 업로드 실패: {:?}", e);
+                eprintln!("{}", detail);
+                Error::from_string(detail, StatusCode::INTERNAL_SERVER_ERROR)
             })?;
 
         let image_url = format!("{}/{}", data.cdn_base_url.trim_end_matches('/'), image_key);

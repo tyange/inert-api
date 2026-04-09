@@ -28,6 +28,12 @@ impl<T: Serialize> CustomResponse<T> {
     }
 }
 
+impl CustomResponse<()> {
+    pub fn error(msg: &str) -> Self {
+        Self { status: false, data: None, message: Some(msg.to_owned()) }
+    }
+}
+
 // ─── Auth ────────────────────────────────────────────────────
 
 #[derive(Debug, Deserialize)]

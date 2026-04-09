@@ -6,13 +6,22 @@ use poem::{
     handler,
     http::StatusCode,
     web::{Data, Json, Multipart},
-    Error, Request,
+    Error, IntoResponse, Request, Response,
 };
 use uuid::Uuid;
 
 use crate::models::{AppState, CustomResponse, UploadImageResponse};
 
 const MAX_BYTES: usize = 20 * 1024 * 1024; // 20MB
+
+fn json_error(msg: &str, status: StatusCode) -> Error {
+    let body = serde_json::to_string(&CustomResponse::<()>::error(msg)).unwrap();
+    let resp = Response::builder()
+        .status(status)
+        .content_type("application/json; charset=utf-8")
+        .body(body);
+    Error::from_response(resp.into_response())
+}
 
 #[handler]
 pub async fn upload_image(
@@ -29,27 +38,27 @@ pub async fn upload_image(
             .unwrap_or_default();
 
         if !content_type.starts_with("image/") {
-            return Err(Error::from_string("이미지 파일만 업로드할 수 있습니다.", StatusCode::BAD_REQUEST));
+            return Err(json_error("이미지 파일만 업로드할 수 있습니다.", StatusCode::BAD_REQUEST));
         }
 
         let file_bytes = field
             .bytes()
             .await
-            .map_err(|e| Error::from_string(e.to_string(), StatusCode::INTERNAL_SERVER_ERROR))?;
+            .map_err(|e| json_error(&e.to_string(), StatusCode::INTERNAL_SERVER_ERROR))?;
 
         if file_bytes.is_empty() {
-            return Err(Error::from_string("빈 파일은 업로드할 수 없습니다.", StatusCode::BAD_REQUEST));
+            return Err(json_error("빈 파일은 업로드할 수 없습니다.", StatusCode::BAD_REQUEST));
         }
 
         if file_bytes.len() > MAX_BYTES {
-            return Err(Error::from_string("파일 크기가 20MB를 초과합니다.", StatusCode::PAYLOAD_TOO_LARGE));
+            return Err(json_error("파일 크기가 20MB를 초과합니다.", StatusCode::PAYLOAD_TOO_LARGE));
         }
 
         // 이미지 검증 및 크기 추출
         let (width, height) = match image::load_from_memory(&file_bytes) {
             Ok(img) => (Some(img.width()), Some(img.height())),
             Err(_) => {
-                return Err(Error::from_string("유효하지 않은 이미지 파일입니다.", StatusCode::BAD_REQUEST));
+                return Err(json_error("유효하지 않은 이미지 파일입니다.", StatusCode::BAD_REQUEST));
             }
         };
 
@@ -74,7 +83,7 @@ pub async fn upload_image(
             .map_err(|e| {
                 let detail = format!("S3 업로드 실패: {:?}", e);
                 eprintln!("{}", detail);
-                Error::from_string(detail, StatusCode::INTERNAL_SERVER_ERROR)
+                json_error(&detail, StatusCode::INTERNAL_SERVER_ERROR)
             })?;
 
         let image_url = format!("{}/{}", data.cdn_base_url.trim_end_matches('/'), image_key);
@@ -87,5 +96,5 @@ pub async fn upload_image(
         })));
     }
 
-    Err(Error::from_string("업로드할 이미지가 없습니다.", StatusCode::BAD_REQUEST))
+    Err(json_error("업로드할 이미지가 없습니다.", StatusCode::BAD_REQUEST))
 }

@@ -67,7 +67,14 @@ pub async fn update_me(
     }
 
     if let Some(ref bio) = body.bio {
-        let val = if bio.trim().is_empty() { None } else { Some(bio.trim()) };
+        let trimmed = bio.trim();
+        if trimmed.chars().count() > 100 {
+            return Err(Error::from_string(
+                "소개는 100자 이내여야 합니다.",
+                StatusCode::BAD_REQUEST,
+            ));
+        }
+        let val = if trimmed.is_empty() { None } else { Some(trimmed) };
         query("UPDATE users SET bio = ? WHERE user_id = ?")
             .bind(val)
             .bind(&user.user_id)

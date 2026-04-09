@@ -28,6 +28,7 @@ use routes::{
     get_feed_rss::get_feed_rss,
     get_mine::get_mine,
     get_still::get_still,
+    get_user_profile::get_user_profile,
     get_user_stills::get_user_stills,
     login::login,
     login_google::login_google,
@@ -133,6 +134,7 @@ async fn main() -> Result<(), std::io::Error> {
         .at("/s/:slug", get(get_still))
         // 유저 공개 페이지
         .at("/u/:username", get(get_user_stills))
+        .at("/u/:username/profile", get(get_user_profile))
         // CORS preflight
         .at("/*path", options(options_handler))
         .data(state)

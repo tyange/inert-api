@@ -5,6 +5,7 @@ pub mod get_feed_json;
 pub mod get_feed_rss;
 pub mod get_mine;
 pub mod get_still;
+pub mod get_user_profile;
 pub mod get_user_stills;
 pub mod login;
 pub mod login_google;

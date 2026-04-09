@@ -70,6 +70,15 @@ pub struct MeResponse {
     pub bio: Option<String>,
 }
 
+#[derive(Debug, Serialize, FromRow)]
+pub struct UserProfileResponse {
+    pub user_id: String,
+    pub username: String,
+    pub display_name: Option<String>,
+    pub avatar_url: Option<String>,
+    pub bio: Option<String>,
+}
+
 // ─── Stills ──────────────────────────────────────────────────
 
 #[derive(Debug, Deserialize)]

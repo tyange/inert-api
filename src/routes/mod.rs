@@ -10,4 +10,5 @@ pub mod login;
 pub mod login_google;
 pub mod me;
 pub mod signup;
+pub mod update_me;
 pub mod upload_image;

@@ -33,6 +33,7 @@ use routes::{
     login_google::login_google,
     me::me,
     signup::signup,
+    update_me::update_me,
     upload_image::upload_image,
 };
 use sqlx::SqlitePool;
@@ -112,7 +113,7 @@ async fn main() -> Result<(), std::io::Error> {
         .at("/auth/signup", post(signup))
         .at("/auth/login", post(login))
         .at("/auth/login/google", post(login_google))
-        .at("/auth/me", get(me).with(Auth))
+        .at("/auth/me", get(me).put(update_me).with(Auth))
         // Stills
         .at("/stills", post(create_still).with(Auth))
         .at("/stills/mine", get(get_mine).with(Auth))

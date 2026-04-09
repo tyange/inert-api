@@ -48,6 +48,13 @@ pub struct GoogleLoginRequest {
     pub id_token: String,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct UpdateMeRequest {
+    pub username: Option<String>,
+    pub display_name: Option<String>,
+    pub bio: Option<String>,
+}
+
 #[derive(Debug, Serialize)]
 pub struct LoginResponse {
     pub access_token: String,
